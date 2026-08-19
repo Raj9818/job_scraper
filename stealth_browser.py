@@ -9,6 +9,7 @@ import asyncio
 from playwright.async_api import async_playwright
 from playwright_stealth import stealth_async
 import config
+import shutil
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -33,7 +34,11 @@ class StealthSession:
     async def start(self):
         self.playwright = await async_playwright().start()
         proxy = config.get_proxy()
-        launch_args = {"headless": True, "channel": "chrome"}
+        chrome_path = shutil.which("google-chrome")
+        if chrome_path:
+            launch_args = {"headless": True, "channel": "chrome"}
+        else:
+            launch_args = {"headless": True, }
         if proxy:
             launch_args["proxy"] = {"server": proxy}
 
