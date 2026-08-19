@@ -1,5 +1,9 @@
+import os
+import threading
+import asyncio
 from flask import Flask, jsonify, render_template
 from db import Session, JobListing, SourceHealth
+from main import run_naukri
 
 app = Flask(__name__)
 
@@ -71,10 +75,29 @@ def api_health():
     finally:
         session.close()
 
+def run_scraper():
+    """Run scraper in background."""
+    try:
+        asyncio.run(run_naukri())
+    except Exception as e:
+        print(f"[SCRAPER ERROR] {type(e).__name__}: {e}")
+
 
 if __name__ == "__main__":
+
+    # Start scraper in background
+    scraper_thread = threading.Thread(
+        target=run_scraper,
+        daemon=True
+    )
+
+    scraper_thread.start()
+
+    # Railway provides PORT
+    port = int(os.environ.get("PORT", 8080))
+
     app.run(
         host="0.0.0.0",
-        port=8080,
+        port=port,
         debug=False,
     )
