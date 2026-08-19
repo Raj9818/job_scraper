@@ -57,6 +57,12 @@ def get_float_env(name: str, default: float) -> float:
 # =========================================================
 
 DB_URL = get_required_env("DB_URL")
+if DB_URL.startswith("postgresql://"):
+    DB_URL = DB_URL.replace(
+        "postgresql://",
+        "postgresql+psycopg://",
+        1
+    )
 
 
 # =========================================================
