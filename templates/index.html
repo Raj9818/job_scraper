@@ -1,0 +1,2379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Job Scraper Dashboard</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+
+        /* =====================================================
+           HEADER
+        ===================================================== */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .title-section h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .title-section p {
+            margin: 6px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        .refresh-btn,
+        .reset-btn {
+            padding: 9px 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .refresh-btn {
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+        }
+
+        .refresh-btn:hover {
+            background: #f9fafb;
+        }
+
+        .reset-btn {
+            border: none;
+            background: #111827;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #374151;
+        }
+
+        /* =====================================================
+           STATS
+        ===================================================== */
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 16px 20px;
+            min-width: 170px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* =====================================================
+           TABLE
+        ===================================================== */
+
+        .table-container {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: visible;
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 1100px;
+        }
+
+        th {
+            position: relative;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
+            padding: 0;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            white-space: nowrap;
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        .th-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 44px;
+            padding-left: 14px;
+        }
+
+        .th-label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .th-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-button {
+            width: 34px;
+            height: 34px;
+            margin-right: 4px;
+
+            border: none;
+            background: transparent;
+            border-radius: 5px;
+
+            cursor: pointer;
+
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .filter-button:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .filter-button.active {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .sort-indicator {
+            color: #9ca3af;
+            margin-left: 5px;
+            font-size: 10px;
+        }
+
+        td {
+            padding: 13px 14px;
+            border-bottom: 1px solid #f0f1f3;
+            border-right: 1px solid #f3f4f6;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .job-title {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .job-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .job-title a:hover {
+            color: #4f46e5;
+        }
+
+        .company {
+            color: #374151;
+        }
+
+        .location {
+            color: #4b5563;
+        }
+
+        .experience {
+            color: #4b5563;
+        }
+
+        .date {
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        /* =====================================================
+           FILTER DROPDOWN
+        ===================================================== */
+
+        .filter-dropdown {
+            position: absolute;
+
+            top: 42px;
+            right: 4px;
+
+            width: 280px;
+
+            background: white;
+
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+
+            box-shadow:
+                0 10px 25px rgba(0, 0, 0, 0.12),
+                0 3px 8px rgba(0, 0, 0, 0.06);
+
+            z-index: 1000;
+
+            display: none;
+        }
+
+        .filter-dropdown.open {
+            display: block;
+        }
+
+        .filter-header {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .filter-search {
+            width: 100%;
+
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+
+            padding: 8px 10px;
+
+            font-size: 13px;
+
+            outline: none;
+        }
+
+        .filter-search:focus {
+            border-color: #6366f1;
+
+            box-shadow:
+                0 0 0 2px rgba(99, 102, 241, 0.12);
+        }
+
+        .filter-controls {
+            display: flex;
+            justify-content: space-between;
+
+            padding: 8px 10px;
+
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .filter-controls button {
+            border: none;
+            background: transparent;
+
+            color: #4f46e5;
+
+            cursor: pointer;
+
+            font-size: 12px;
+            padding: 2px;
+        }
+
+        .filter-controls button:hover {
+            text-decoration: underline;
+        }
+
+        .filter-values {
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 5px 0;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+
+            gap: 8px;
+
+            padding: 7px 12px;
+
+            cursor: pointer;
+
+            font-size: 13px;
+        }
+
+        .filter-option:hover {
+            background: #f9fafb;
+        }
+
+        .filter-option input {
+            cursor: pointer;
+        }
+
+        .filter-footer {
+            display: flex;
+            justify-content: flex-end;
+
+            gap: 8px;
+
+            padding: 9px 10px;
+
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .filter-footer button {
+            padding: 6px 12px;
+
+            border-radius: 5px;
+
+            font-size: 12px;
+
+            cursor: pointer;
+        }
+
+        .cancel-filter {
+            background: white;
+            border: 1px solid #d1d5db;
+        }
+
+        .apply-filter {
+            background: #4f46e5;
+            color: white;
+            border: 1px solid #4f46e5;
+        }
+
+        .apply-filter:hover {
+            background: #4338ca;
+        }
+
+        /* =====================================================
+           PAGINATION
+        ===================================================== */
+
+        .pagination-container {
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 14px 16px;
+
+            border-top: 1px solid #e5e7eb;
+
+            background: white;
+
+            border-radius: 0 0 10px 10px;
+
+            gap: 16px;
+
+            flex-wrap: wrap;
+        }
+
+        .pagination-info {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pagination-button {
+            min-width: 34px;
+            height: 34px;
+
+            padding: 0 10px;
+
+            border: 1px solid #d1d5db;
+
+            background: white;
+
+            color: #374151;
+
+            border-radius: 6px;
+
+            cursor: pointer;
+
+            font-size: 13px;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+
+        .pagination-button.active {
+            background: #4f46e5;
+            border-color: #4f46e5;
+            color: white;
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .page-size {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .page-size select {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+
+            padding: 7px 9px;
+
+            background: white;
+
+            font-size: 13px;
+
+            cursor: pointer;
+        }
+
+        .page-size select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        .page-ellipsis {
+            padding: 0 4px;
+            color: #9ca3af;
+        }
+
+        /* =====================================================
+           EMPTY / LOADING
+        ===================================================== */
+
+        .empty {
+            text-align: center;
+            padding: 50px;
+            color: #6b7280;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 700px) {
+
+            .container {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+            }
+
+            .stats {
+                flex-wrap: wrap;
+            }
+
+            .pagination-container {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .pagination-controls {
+                flex-wrap: wrap;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="header">
+
+        <div class="title-section">
+
+            <h1>
+                Job Listings
+            </h1>
+
+            <p>
+                Naukri scraper results
+            </p>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <button
+                class="refresh-btn"
+                onclick="loadJobs()"
+            >
+                ↻ Refresh
+            </button>
+
+
+            <button
+                class="reset-btn"
+                onclick="resetFilters()"
+            >
+                Reset Filters
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATS
+    ====================================================== -->
+
+    <div class="stats">
+
+        <div class="stat-card">
+
+            <div class="stat-label">
+                Total Results
+            </div>
+
+            <div
+                class="stat-value"
+                id="total-count"
+            >
+                0
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-label">
+                Filtered Results
+            </div>
+
+            <div
+                class="stat-value"
+                id="filtered-count"
+            >
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TABLE
+    ====================================================== -->
+
+    <div class="table-container">
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <!-- TITLE -->
+
+                        <th data-column="title">
+
+                            <div class="th-content">
+
+                                <span
+                                    class="th-label"
+                                    onclick="sortBy('title')"
+                                >
+                                    Title
+
+                                    <span
+                                        class="sort-indicator"
+                                        id="sort-title"
+                                    ></span>
+                                </span>
+
+
+                                <div class="th-actions">
+
+                                    <button
+                                        class="filter-button"
+                                        onclick="toggleFilter(event, 'title')"
+                                    >
+                                        ▼
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="filter-dropdown"
+                                id="filter-title"
+                            ></div>
+
+                        </th>
+
+
+                        <!-- COMPANY -->
+
+                        <th data-column="company">
+
+                            <div class="th-content">
+
+                                <span
+                                    class="th-label"
+                                    onclick="sortBy('company')"
+                                >
+                                    Company
+
+                                    <span
+                                        class="sort-indicator"
+                                        id="sort-company"
+                                    ></span>
+                                </span>
+
+
+                                <div class="th-actions">
+
+                                    <button
+                                        class="filter-button"
+                                        onclick="toggleFilter(event, 'company')"
+                                    >
+                                        ▼
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="filter-dropdown"
+                                id="filter-company"
+                            ></div>
+
+                        </th>
+
+
+                        <!-- LOCATION -->
+
+                        <th data-column="location">
+
+                            <div class="th-content">
+
+                                <span
+                                    class="th-label"
+                                    onclick="sortBy('location')"
+                                >
+                                    Location
+
+                                    <span
+                                        class="sort-indicator"
+                                        id="sort-location"
+                                    ></span>
+                                </span>
+
+
+                                <div class="th-actions">
+
+                                    <button
+                                        class="filter-button"
+                                        onclick="toggleFilter(event, 'location')"
+                                    >
+                                        ▼
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="filter-dropdown"
+                                id="filter-location"
+                            ></div>
+
+                        </th>
+
+
+                        <!-- EXPERIENCE -->
+
+                        <th data-column="experience">
+
+                            <div class="th-content">
+
+                                <span
+                                    class="th-label"
+                                    onclick="sortBy('experience')"
+                                >
+                                    Experience
+
+                                    <span
+                                        class="sort-indicator"
+                                        id="sort-experience"
+                                    ></span>
+                                </span>
+
+
+                                <div class="th-actions">
+
+                                    <button
+                                        class="filter-button"
+                                        onclick="toggleFilter(event, 'experience')"
+                                    >
+                                        ▼
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="filter-dropdown"
+                                id="filter-experience"
+                            ></div>
+
+                        </th>
+
+
+                        <!-- SCRAPED AT -->
+
+                        <th data-column="scraped_at">
+
+                            <div class="th-content">
+
+                                <span
+                                    class="th-label"
+                                    onclick="sortBy('scraped_at')"
+                                >
+                                    Scraped At
+
+                                    <span
+                                        class="sort-indicator"
+                                        id="sort-scraped_at"
+                                    ></span>
+                                </span>
+
+
+                                <div class="th-actions">
+
+                                    <button
+                                        class="filter-button"
+                                        onclick="toggleFilter(event, 'scraped_at')"
+                                    >
+                                        ▼
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                            <div
+                                class="filter-dropdown"
+                                id="filter-scraped_at"
+                            ></div>
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="jobs-body">
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="loading"
+                        >
+                            Loading...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             PAGINATION
+        ================================================== -->
+
+        <div class="pagination-container">
+
+            <div
+                class="pagination-info"
+                id="pagination-info"
+            >
+                Showing 0–0 of 0
+            </div>
+
+
+            <div class="pagination-controls">
+
+                <button
+                    class="pagination-button"
+                    id="first-page"
+                    onclick="goToPage(1)"
+                >
+                    «
+                </button>
+
+
+                <button
+                    class="pagination-button"
+                    id="previous-page"
+                    onclick="previousPage()"
+                >
+                    ‹
+                </button>
+
+
+                <div id="page-numbers"></div>
+
+
+                <button
+                    class="pagination-button"
+                    id="next-page"
+                    onclick="nextPage()"
+                >
+                    ›
+                </button>
+
+
+                <button
+                    class="pagination-button"
+                    id="last-page"
+                    onclick="goToLastPage()"
+                >
+                    »
+                </button>
+
+            </div>
+
+
+            <div class="page-size">
+
+                <span>
+                    Rows per page
+                </span>
+
+                <select
+                    id="page-size"
+                    onchange="changePageSize()"
+                >
+                    <option value="10">
+                        10
+                    </option>
+
+                    <option
+                        value="20"
+                        selected
+                    >
+                        20
+                    </option>
+
+                    <option value="50">
+                        50
+                    </option>
+
+                    <option value="100">
+                        100
+                    </option>
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* =====================================================
+       GLOBAL STATE
+    ===================================================== */
+
+    let allJobs = [];
+
+    let filteredJobs = [];
+
+    let activeFilters = {
+
+        title: new Set(),
+
+        company: new Set(),
+
+        location: new Set(),
+
+        experience: new Set(),
+
+        scraped_at: new Set()
+
+    };
+
+
+    let sortColumn = null;
+
+    let sortDirection = "asc";
+
+
+    /* =====================================================
+       PAGINATION STATE
+    ===================================================== */
+
+    let currentPage = 1;
+
+    let pageSize = 20;
+
+
+    /* =====================================================
+       LOAD JOBS
+    ===================================================== */
+
+    async function loadJobs() {
+
+        try {
+
+            const response =
+                await fetch("/api/jobs");
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to load jobs"
+                );
+
+            }
+
+
+            allJobs =
+                await response.json();
+
+
+            document
+                .getElementById("total-count")
+                .textContent =
+                allJobs.length;
+
+
+            currentPage = 1;
+
+            applyFilters();
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            document
+                .getElementById("jobs-body")
+                .innerHTML = `
+                    <tr>
+                        <td
+                            colspan="5"
+                            class="empty"
+                        >
+                            Failed to load jobs.
+                        </td>
+                    </tr>
+                `;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       UNIQUE FILTER VALUES
+    ===================================================== */
+
+    function getUniqueValues(column) {
+
+        const values =
+            new Set();
+
+
+        allJobs.forEach(job => {
+
+            let value =
+                job[column] ||
+                "(Blank)";
+
+
+            if (
+                column === "scraped_at"
+            ) {
+
+                value =
+                    formatDate(value);
+
+            }
+
+
+            values.add(value);
+
+        });
+
+
+        return Array
+            .from(values)
+            .sort(
+                (a, b) =>
+                    a.localeCompare(b)
+            );
+
+    }
+
+
+    /* =====================================================
+       OPEN FILTER
+    ===================================================== */
+
+    function toggleFilter(
+        event,
+        column
+    ) {
+
+        event.stopPropagation();
+
+
+        document
+            .querySelectorAll(
+                ".filter-dropdown"
+            )
+            .forEach(dropdown => {
+
+                if (
+                    dropdown.id !==
+                    `filter-${column}`
+                ) {
+
+                    dropdown.classList
+                        .remove("open");
+
+                }
+
+            });
+
+
+        const dropdown =
+            document.getElementById(
+                `filter-${column}`
+            );
+
+
+        if (
+            dropdown.classList.contains(
+                "open"
+            )
+        ) {
+
+            dropdown.classList
+                .remove("open");
+
+            return;
+
+        }
+
+
+        buildFilterDropdown(column);
+
+        dropdown.classList.add("open");
+
+    }
+
+
+    /* =====================================================
+       BUILD FILTER DROPDOWN
+    ===================================================== */
+
+    function buildFilterDropdown(
+        column
+    ) {
+
+        const dropdown =
+            document.getElementById(
+                `filter-${column}`
+            );
+
+
+        const values =
+            getUniqueValues(column);
+
+
+        const selected =
+            activeFilters[column];
+
+
+        dropdown.innerHTML = `
+
+            <div class="filter-header">
+
+                <input
+                    class="filter-search"
+                    placeholder="Search..."
+                    oninput="
+                        searchFilterValues(
+                            '${column}',
+                            this.value
+                        )
+                    "
+                >
+
+            </div>
+
+
+            <div class="filter-controls">
+
+                <button
+                    onclick="
+                        selectAllFilter(
+                            '${column}'
+                        )
+                    "
+                >
+                    Select All
+                </button>
+
+
+                <button
+                    onclick="
+                        clearFilter(
+                            '${column}'
+                        )
+                    "
+                >
+                    Clear
+                </button>
+
+            </div>
+
+
+            <div
+                class="filter-values"
+                id="filter-values-${column}"
+            >
+
+                ${
+                    values.map(value => `
+
+                        <label
+                            class="filter-option"
+                            data-value="${escapeHtml(value).toLowerCase()}"
+                        >
+
+                            <input
+                                type="checkbox"
+                                value="${escapeHtml(value)}"
+
+                                ${
+                                    selected.has(value)
+                                        ? "checked"
+                                        : ""
+                                }
+                            >
+
+                            <span>
+                                ${escapeHtml(value)}
+                            </span>
+
+                        </label>
+
+                    `).join("")
+                }
+
+            </div>
+
+
+            <div class="filter-footer">
+
+                <button
+                    class="cancel-filter"
+                    onclick="closeFilters()"
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    class="apply-filter"
+                    onclick="
+                        applyFilter(
+                            '${column}'
+                        )
+                    "
+                >
+                    Apply
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       APPLY ONE FILTER
+    ===================================================== */
+
+    function applyFilter(column) {
+
+        const dropdown =
+            document.getElementById(
+                `filter-${column}`
+            );
+
+
+        const checkboxes =
+            dropdown.querySelectorAll(
+                'input[type="checkbox"]'
+            );
+
+
+        const selected =
+            new Set();
+
+
+        checkboxes.forEach(
+            checkbox => {
+
+                if (checkbox.checked) {
+
+                    selected.add(
+                        checkbox.value
+                    );
+
+                }
+
+            }
+        );
+
+
+        activeFilters[column] =
+            selected;
+
+
+        updateFilterButton(column);
+
+
+        dropdown.classList
+            .remove("open");
+
+
+        currentPage = 1;
+
+        applyFilters();
+
+    }
+
+
+    /* =====================================================
+       SELECT ALL
+    ===================================================== */
+
+    function selectAllFilter(column) {
+
+        const dropdown =
+            document.getElementById(
+                `filter-${column}`
+            );
+
+
+        dropdown
+            .querySelectorAll(
+                'input[type="checkbox"]'
+            )
+            .forEach(
+                checkbox => {
+
+                    checkbox.checked =
+                        true;
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       CLEAR FILTER
+    ===================================================== */
+
+    function clearFilter(column) {
+
+        const dropdown =
+            document.getElementById(
+                `filter-${column}`
+            );
+
+
+        dropdown
+            .querySelectorAll(
+                'input[type="checkbox"]'
+            )
+            .forEach(
+                checkbox => {
+
+                    checkbox.checked =
+                        false;
+
+                }
+            );
+
+    }
+
+
+    /* =====================================================
+       SEARCH FILTER VALUES
+    ===================================================== */
+
+    function searchFilterValues(
+        column,
+        search
+    ) {
+
+        search =
+            search.toLowerCase();
+
+
+        const options =
+            document
+                .getElementById(
+                    `filter-values-${column}`
+                )
+                .querySelectorAll(
+                    ".filter-option"
+                );
+
+
+        options.forEach(option => {
+
+            option.style.display =
+                option.dataset.value
+                    .includes(search)
+                    ? "flex"
+                    : "none";
+
+        });
+
+    }
+
+
+    /* =====================================================
+       APPLY ALL FILTERS
+    ===================================================== */
+
+    function applyFilters() {
+
+        let filtered =
+            allJobs.filter(job => {
+
+                return Object
+                    .keys(activeFilters)
+                    .every(column => {
+
+                        const selected =
+                            activeFilters[column];
+
+
+                        if (
+                            selected.size === 0
+                        ) {
+
+                            return true;
+
+                        }
+
+
+                        let value =
+                            job[column] ||
+                            "(Blank)";
+
+
+                        if (
+                            column ===
+                            "scraped_at"
+                        ) {
+
+                            value =
+                                formatDate(value);
+
+                        }
+
+
+                        return selected.has(
+                            value
+                        );
+
+                    });
+
+            });
+
+
+        /* =================================================
+           SORTING
+        ================================================== */
+
+        if (sortColumn) {
+
+            filtered.sort(
+                (a, b) => {
+
+                    let aValue =
+                        a[sortColumn] || "";
+
+                    let bValue =
+                        b[sortColumn] || "";
+
+
+                    if (
+                        sortColumn ===
+                        "scraped_at"
+                    ) {
+
+                        aValue =
+                            new Date(
+                                aValue
+                            ).getTime();
+
+                        bValue =
+                            new Date(
+                                bValue
+                            ).getTime();
+
+
+                        return (
+                            sortDirection === "asc"
+                                ? aValue - bValue
+                                : bValue - aValue
+                        );
+
+                    }
+
+
+                    aValue =
+                        String(
+                            aValue
+                        ).toLowerCase();
+
+
+                    bValue =
+                        String(
+                            bValue
+                        ).toLowerCase();
+
+
+                    const result =
+                        aValue.localeCompare(
+                            bValue
+                        );
+
+
+                    return (
+                        sortDirection === "asc"
+                            ? result
+                            : -result
+                    );
+
+                }
+            );
+
+        }
+
+
+        filteredJobs =
+            filtered;
+
+
+        document
+            .getElementById(
+                "filtered-count"
+            )
+            .textContent =
+            filtered.length;
+
+
+        /* =================================================
+           VALIDATE CURRENT PAGE
+        ================================================== */
+
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    filtered.length /
+                    pageSize
+                )
+            );
+
+
+        if (
+            currentPage >
+            totalPages
+        ) {
+
+            currentPage =
+                totalPages;
+
+        }
+
+
+        renderCurrentPage();
+
+    }
+
+
+    /* =====================================================
+       RENDER CURRENT PAGE
+    ===================================================== */
+
+    function renderCurrentPage() {
+
+        const total =
+            filteredJobs.length;
+
+
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    total /
+                    pageSize
+                )
+            );
+
+
+        const startIndex =
+            (currentPage - 1) *
+            pageSize;
+
+
+        const endIndex =
+            Math.min(
+                startIndex +
+                pageSize,
+                total
+            );
+
+
+        const pageJobs =
+            filteredJobs.slice(
+                startIndex,
+                endIndex
+            );
+
+
+        renderJobs(pageJobs);
+
+
+        updatePagination(
+            total,
+            startIndex,
+            endIndex,
+            totalPages
+        );
+
+    }
+
+
+    /* =====================================================
+       RENDER TABLE
+    ===================================================== */
+
+    function renderJobs(jobs) {
+
+        const tbody =
+            document.getElementById(
+                "jobs-body"
+            );
+
+
+        if (
+            jobs.length === 0
+        ) {
+
+            tbody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        class="empty"
+                    >
+                        No jobs match the
+                        selected filters.
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        tbody.innerHTML =
+            jobs.map(job => `
+
+                <tr>
+
+                    <td class="job-title">
+
+                        <a
+                            href="${escapeHtml(job.url)}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            ${escapeHtml(job.title)}
+                        </a>
+
+                    </td>
+
+
+                    <td class="company">
+                        ${escapeHtml(job.company)}
+                    </td>
+
+
+                    <td class="location">
+                        ${escapeHtml(job.location)}
+                    </td>
+
+
+                    <td class="experience">
+                        ${escapeHtml(job.experience)}
+                    </td>
+
+
+                    <td class="date">
+                        ${formatDate(
+                            job.scraped_at
+                        )}
+                    </td>
+
+                </tr>
+
+            `).join("");
+
+    }
+
+
+    /* =====================================================
+       PAGINATION
+    ===================================================== */
+
+    function updatePagination(
+        total,
+        startIndex,
+        endIndex,
+        totalPages
+    ) {
+
+        const info =
+            document.getElementById(
+                "pagination-info"
+            );
+
+
+        if (total === 0) {
+
+            info.textContent =
+                "Showing 0–0 of 0";
+
+        }
+
+        else {
+
+            info.textContent =
+                `Showing ${
+                    startIndex + 1
+                }–${
+                    endIndex
+                } of ${
+                    total
+                }`;
+
+        }
+
+
+        document
+            .getElementById(
+                "first-page"
+            )
+            .disabled =
+            currentPage <= 1;
+
+
+        document
+            .getElementById(
+                "previous-page"
+            )
+            .disabled =
+            currentPage <= 1;
+
+
+        document
+            .getElementById(
+                "next-page"
+            )
+            .disabled =
+            currentPage >= totalPages;
+
+
+        document
+            .getElementById(
+                "last-page"
+            )
+            .disabled =
+            currentPage >= totalPages;
+
+
+        renderPageNumbers(
+            totalPages
+        );
+
+    }
+
+
+    /* =====================================================
+       PAGE NUMBERS
+    ===================================================== */
+
+    function renderPageNumbers(
+        totalPages
+    ) {
+
+        const container =
+            document.getElementById(
+                "page-numbers"
+            );
+
+
+        let pages = [];
+
+
+        if (totalPages <= 7) {
+
+            for (
+                let i = 1;
+                i <= totalPages;
+                i++
+            ) {
+
+                pages.push(i);
+
+            }
+
+        }
+
+        else {
+
+            pages.push(1);
+
+
+            if (
+                currentPage > 4
+            ) {
+
+                pages.push("...");
+
+            }
+
+
+            const start =
+                Math.max(
+                    2,
+                    currentPage - 1
+                );
+
+
+            const end =
+                Math.min(
+                    totalPages - 1,
+                    currentPage + 1
+                );
+
+
+            for (
+                let i = start;
+                i <= end;
+                i++
+            ) {
+
+                pages.push(i);
+
+            }
+
+
+            if (
+                currentPage <
+                totalPages - 3
+            ) {
+
+                pages.push("...");
+
+            }
+
+
+            pages.push(
+                totalPages
+            );
+
+        }
+
+
+        container.innerHTML =
+            pages.map(page => {
+
+                if (
+                    page === "..."
+                ) {
+
+                    return `
+                        <span
+                            class="page-ellipsis"
+                        >
+                            ...
+                        </span>
+                    `;
+
+                }
+
+
+                return `
+
+                    <button
+                        class="
+                            pagination-button
+                            ${
+                                page === currentPage
+                                    ? "active"
+                                    : ""
+                            }
+                        "
+                        onclick="
+                            goToPage(
+                                ${page}
+                            )
+                        "
+                    >
+                        ${page}
+                    </button>
+
+                `;
+
+            }).join("");
+
+    }
+
+
+    /* =====================================================
+       GO TO PAGE
+    ===================================================== */
+
+    function goToPage(page) {
+
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    filteredJobs.length /
+                    pageSize
+                )
+            );
+
+
+        if (
+            page < 1 ||
+            page > totalPages
+        ) {
+
+            return;
+
+        }
+
+
+        currentPage =
+            page;
+
+
+        renderCurrentPage();
+
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    /* =====================================================
+       PREVIOUS PAGE
+    ===================================================== */
+
+    function previousPage() {
+
+        if (
+            currentPage > 1
+        ) {
+
+            goToPage(
+                currentPage - 1
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       NEXT PAGE
+    ===================================================== */
+
+    function nextPage() {
+
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    filteredJobs.length /
+                    pageSize
+                )
+            );
+
+
+        if (
+            currentPage <
+            totalPages
+        ) {
+
+            goToPage(
+                currentPage + 1
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       LAST PAGE
+    ===================================================== */
+
+    function goToLastPage() {
+
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    filteredJobs.length /
+                    pageSize
+                )
+            );
+
+
+        goToPage(
+            totalPages
+        );
+
+    }
+
+
+    /* =====================================================
+       CHANGE PAGE SIZE
+    ===================================================== */
+
+    function changePageSize() {
+
+        pageSize =
+            Number(
+                document
+                    .getElementById(
+                        "page-size"
+                    )
+                    .value
+            );
+
+
+        currentPage = 1;
+
+
+        renderCurrentPage();
+
+    }
+
+
+    /* =====================================================
+       SORTING
+    ===================================================== */
+
+    function sortBy(column) {
+
+        if (
+            sortColumn === column
+        ) {
+
+            sortDirection =
+                sortDirection === "asc"
+                    ? "desc"
+                    : "asc";
+
+        }
+
+        else {
+
+            sortColumn =
+                column;
+
+            sortDirection =
+                "asc";
+
+        }
+
+
+        document
+            .querySelectorAll(
+                ".sort-indicator"
+            )
+            .forEach(element => {
+
+                element.textContent =
+                    "";
+
+            });
+
+
+        document
+            .getElementById(
+                `sort-${column}`
+            )
+            .textContent =
+            sortDirection === "asc"
+                ? "▲"
+                : "▼";
+
+
+        currentPage = 1;
+
+        applyFilters();
+
+    }
+
+
+    /* =====================================================
+       RESET FILTERS
+    ===================================================== */
+
+    function resetFilters() {
+
+        Object
+            .keys(activeFilters)
+            .forEach(column => {
+
+                activeFilters[column] =
+                    new Set();
+
+
+                updateFilterButton(
+                    column
+                );
+
+            });
+
+
+        sortColumn = null;
+
+        sortDirection = "asc";
+
+
+        document
+            .querySelectorAll(
+                ".sort-indicator"
+            )
+            .forEach(element => {
+
+                element.textContent =
+                    "";
+
+            });
+
+
+        currentPage = 1;
+
+
+        applyFilters();
+
+
+        closeFilters();
+
+    }
+
+
+    /* =====================================================
+       FILTER BUTTON STATE
+    ===================================================== */
+
+    function updateFilterButton(
+        column
+    ) {
+
+        const button =
+            document.querySelector(
+                `[data-column="${column}"] .filter-button`
+            );
+
+
+        if (!button) {
+
+            return;
+
+        }
+
+
+        button.classList.toggle(
+            "active",
+            activeFilters[column]
+                .size > 0
+        );
+
+    }
+
+
+    /* =====================================================
+       CLOSE FILTERS
+    ===================================================== */
+
+    function closeFilters() {
+
+        document
+            .querySelectorAll(
+                ".filter-dropdown"
+            )
+            .forEach(dropdown => {
+
+                dropdown.classList
+                    .remove("open");
+
+            });
+
+    }
+
+
+    /* =====================================================
+       DATE FORMAT
+    ===================================================== */
+
+    function formatDate(value) {
+
+        if (!value) {
+
+            return "(Blank)";
+
+        }
+
+
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return value;
+
+        }
+
+
+        return date.toLocaleString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       HTML ESCAPE
+    ===================================================== */
+
+    function escapeHtml(value) {
+
+        return String(
+            value ?? ""
+        )
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+    }
+
+
+    /* =====================================================
+       OUTSIDE CLICK
+    ===================================================== */
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+
+                !event.target.closest(
+                    ".filter-dropdown"
+                )
+
+                &&
+
+                !event.target.closest(
+                    ".filter-button"
+                )
+
+            ) {
+
+                closeFilters();
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       INITIAL LOAD
+    ===================================================== */
+
+    loadJobs();
+
+</script>
+
+</body>
+
+</html>
